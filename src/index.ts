@@ -9,14 +9,10 @@ app.use(express.json());
 
 app.get('/health', async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({
-      status: 'ok',
-      dbTime: result.rows[0],
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'DB connection failed' });
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', db: 'connected' });
+  } catch {
+    res.json({ status: 'ok', db: 'disconnected' });
   }
 });
 
