@@ -8,16 +8,12 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', async (req, res) => {
-  try {
-    await pool.query('SELECT 1');
-    res.json({ status: 'ok', db: 'connected' });
-  } catch {
-    res.json({ status: 'ok', db: 'disconnected' });
-  }
+  res.json({ status: 'I am Ilive!' });
 });
 
 app.get('/message', async (req, res) => {
   try {
+    console.log('Attempting to connect to the database...');
     const result = await pool.query("SELECT 'Hello from AWS RDS!' as message");
     res.json({ message: result.rows[0].message });
   } catch {

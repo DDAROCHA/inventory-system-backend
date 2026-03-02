@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+console.log('DB_HOST:', process.env.DB_HOST);
+
 export const pool = new Pool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
