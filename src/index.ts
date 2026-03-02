@@ -16,6 +16,15 @@ app.get('/health', async (req, res) => {
   }
 });
 
+app.get('/message', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT 'Hello from AWS RDS!' as message");
+    res.json({ message: result.rows[0].message });
+  } catch {
+    res.json({ message: 'DB not connected' });
+  }
+});
+
 const PORT = 3001;
 
 app.listen(PORT, () => {
