@@ -11,6 +11,21 @@ app.get('/health', async (req, res) => {
   res.json({ status: 'I am Ilive!' });
 });
 
+app.get('/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({
+      success: true,
+      time: result.rows[0].now,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+    });
+  }
+});
+
 app.get('/message', async (req, res) => {
   try {
     console.log('Attempting to connect to the database...');
