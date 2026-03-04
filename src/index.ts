@@ -9,8 +9,10 @@ import {
   getCoursesByStudent,
   getAllCourses,
 } from './models/courses';
-
 import { getDashboardStats } from './models/dashboard';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { s3 } from './config/s3';
 
 const app = express();
 
@@ -46,6 +48,34 @@ app.get('/message', async (req, res) => {
     res.json({ message: result.rows[0].message });
   } catch {
     res.json({ message: 'DB not connected' });
+  }
+});
+
+// Endpoint para generar URL de subida a S3
+app.get('/students/upload-url', async (req, res) => {
+  try {
+    const { fileName, fileType } = req.query;
+
+    console.log('Generating S3 URL for:', fileName, fileType);
+
+    const key = `students/${Date.now()}-${fileName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+      ContentType: fileType as string,
+    });
+
+    const uploadUrl = await getSignedUrl(s3, command, {
+      expiresIn: 60,
+    });
+
+    const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+    res.json({ uploadUrl, fileUrl });
+  } catch (err) {
+    console.error('S3 URL ERROR:', err);
+    res.status(500).json({ message: 'Error generating upload URL' });
   }
 });
 
@@ -85,13 +115,13 @@ app.get('/students', async (req, res) => {
 // Endpoint para crear estudiante
 app.post('/students', async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, avatar_url } = req.body;
 
     if (!name || !email) {
       return res.status(400).json({ message: 'Name and email required' });
     }
 
-    const newStudent = await createStudent(name, email);
+    const newStudent = await createStudent(name, email, avatar_url);
 
     res.status(201).json({ student: newStudent });
   } catch (err) {
