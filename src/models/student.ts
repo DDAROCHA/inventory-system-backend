@@ -4,11 +4,37 @@ export interface Student {
   id: number;
   name: string;
   email: string;
+  avatar_url?: string;
 }
 
-export const getStudents = async (): Promise<Student[]> => {
-  const result = await pool.query('SELECT id, name, email, avatar_url FROM students');
-  return result.rows;
+export interface PaginatedStudents {
+  students: Student[];
+  total: number;
+  totalPages: number;
+}
+
+export const getStudents = async (page: number, limit: number): Promise<PaginatedStudents> => {
+  const offset = (page - 1) * limit;
+
+  const studentsResult = await pool.query(
+    `
+    SELECT id, name, email, avatar_url
+    FROM students
+    ORDER BY id
+    LIMIT $1 OFFSET $2
+    `,
+    [limit, offset]
+  );
+
+  const countResult = await pool.query(`SELECT COUNT(*) FROM students`);
+
+  const total = Number(countResult.rows[0].count);
+
+  return {
+    students: studentsResult.rows,
+    total,
+    totalPages: Math.ceil(total / limit),
+  };
 };
 
 export const createStudent = async (name: string, email: string, avatarUrl?: string) => {

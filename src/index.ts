@@ -104,8 +104,17 @@ app.get('/courses', async (req, res) => {
 // Endpoint para traer lista de estudiantes
 app.get('/students', async (req, res) => {
   try {
-    const students = await getStudents();
-    res.json({ students });
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+
+    const data = await getStudents(page, limit);
+
+    res.json({
+      students: data.students,
+      total: data.total,
+      page,
+      totalPages: data.totalPages,
+    });
   } catch (err) {
     console.error('DB QUERY ERROR:', err);
     res.status(500).json({ message: 'DB error' });
