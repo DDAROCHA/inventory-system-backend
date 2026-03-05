@@ -9,7 +9,7 @@ import {
   getCoursesByStudent,
   getAllCourses,
 } from './models/courses';
-import { getDashboardStats } from './models/dashboard';
+import { getDashboardStats, getStudentsPerCourse } from './models/dashboard';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3 } from './config/s3';
@@ -86,6 +86,17 @@ app.get('/dashboard', async (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error('DASHBOARD ERROR:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint para traer cantidad de estudiantes por curso
+app.get('/stats/students-per-course', async (req, res) => {
+  try {
+    const stats = await getStudentsPerCourse();
+    res.json(stats);
+  } catch (error) {
+    console.error('DASHBOARD ERROR 2:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
